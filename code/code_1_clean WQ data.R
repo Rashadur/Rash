@@ -7,7 +7,7 @@
 
 data1 <-read.csv("data to manage/Lake_1.csv", header = T)
 ## Import lake data_Secchi_depth (Lake_2) 
-data2 <-read.csv("C:/Users/rar727/OneDrive - University of Saskatchewan/rash/data to manage/Lake_2.csv", header = T)
+data2 <-read.csv("data to manage/Lake_2.csv", header = T)
 
 install.packages("lubridate")
 library(lubridate)
@@ -87,10 +87,10 @@ export(dms_data_set_1_TP, "dms_data_set_1_TP.csv")
 
 ## Import "Final_clean_data_set_1_TP" (C:\Users\rar727\OneDrive - University of Saskatchewan\rash\data to manage\clean lat_long data\FINAL DATA DMS TO DD)
 
-Final_clean_data_set_1_TP <-read.csv("C:/Users/rar727/OneDrive - University of Saskatchewan/rash/data to manage/clean lat_long data/FINAL DATA DMS TO DD/Final_clean_data_set_1_TP.csv", header = T)
+Final_clean_data_set_1_TP <-read.csv("data to manage/clean lat_long data/FINAL DATA DMS TO DD/Final_clean_data_set_1_TP.csv", header = T)
 
 ## Import lake data_Secchi_depth (Lake_2) 
-data2 <-read.csv("//cabinet.usask.ca/work$/rar727/My Documents/GitHub/Water-quality/data for thesis/clean data/Lake_2.csv", header = T)
+data2 <-read.csv("data to manage/Lake_2.csv", header = T)
 
 # Check is there any missing data
 sum(is.na(data2))
@@ -132,7 +132,7 @@ export(dms_data_set_2_SD, "dms_data_set_2_SD.csv")
 #take -(d_long+m_long/60+s_long/3600) as longitude data and saved the file as "Final_clean_data2". Then import the data
 ## Import "Final_clean_data_set_2_SD" (C:\Users\rar727\OneDrive - University of Saskatchewan\rash\data to manage\clean lat_long data\FINAL DATA DMS TO DD)
 
-Final_clean_data_set_2_SD <-read.csv("C:/Users/rar727/OneDrive - University of Saskatchewan/rash/data to manage/clean lat_long data/FINAL DATA DMS TO DD/Final_clean_data_set_2_SD.csv", header = T)
+Final_clean_data_set_2_SD <-read.csv("data to manage/clean lat_long data/FINAL DATA DMS TO DD/Final_clean_data_set_2_SD.csv", header = T)
 
 
 ##Final managed data from data1 (Final_clean_data1) and data2 (Final_clean_data2)
@@ -163,5 +163,5 @@ export(Final_wq_data , "Final_wq_data .csv")
 
 ##Add "Lake_ID" to "Final_wq_data" 
 ## I add a new column "Lake_ID" to Final_wq_data and then import again
-Final_wq_data_1<- read.csv("//cabinet.usask.ca/work$/rar727/My Documents/GitHub/Water-quality/data for thesis/clean data/clean lat_long data/FINAL DATA DMS TO DD/Final_wq_data_1.csv", header = T)
+Final_wq_data_1<- read.csv("final data/wq/Final_wq_data_1.csv", header = T)
 
