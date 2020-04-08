@@ -5,7 +5,7 @@
 ## Import lake data_TP1&TP2(Lake_1) 
 ##I import lake_1 & lake_2 water quality data from (C:\Users\rar727\OneDrive - University of Saskatchewan\rash\data to manage)
 
-data1 <-read.csv("C:/Users/rar727/OneDrive - University of Saskatchewan/rash/data to manage/Lake_1.csv", header = T)
+data1 <-read.csv("data to manage/Lake_1.csv", header = T)
 ## Import lake data_Secchi_depth (Lake_2) 
 data2 <-read.csv("C:/Users/rar727/OneDrive - University of Saskatchewan/rash/data to manage/Lake_2.csv", header = T)
 
