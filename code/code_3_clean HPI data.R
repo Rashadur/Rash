@@ -3,7 +3,7 @@
 
 ## Import HPI data (Base year 2016)
 ##In HPI_data, I converted Total(total HPI) into HPI by dividing Total with 100
-data_HPI <-read.csv("C:/Users/rar727/OneDrive - University of Saskatchewan/rash/data to manage/HPI/HPI_data.csv", header = T)
+data_HPI <-read.csv("data to manage/HPI/HPI_data.csv", header = T)
 
 ## Convert date: "%m/%d/%Y" to "%Y/%m"
 data_HPI$Date <- format(as.Date(data_HPI$Time.period, format="%m/%d/%Y"),"%Y/%m")
@@ -14,7 +14,7 @@ clean_data_HPI<-subset(data_HPI,select = c("Date", "HPI"))
 ## Adjust house price with HPI
 
 ##Import clean house data "clean_HD_sub"
-clean_HD_sub <- read.csv("C:/Users/rar727/OneDrive - University of Saskatchewan/rash/final data/house data/clean_HD_sub.csv", header = T)
+clean_HD_sub <- read.csv("final data/house data/clean_HD_sub.csv", header = T)
 
 ##Merge HPI and housing price based on "Date" (clean_data_HPI and clean_HD_sub)
 marged_HPI_HD <- merge(clean_data_HPI, clean_HD_sub,by=c("Date"),all=TRUE)
