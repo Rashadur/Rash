@@ -2,7 +2,7 @@
 ## House data
 
 ## Import house data (house data1)
-HD <-read.csv("C:/Users/rar727/OneDrive - University of Saskatchewan/rash/data to manage/house data/house data1.csv", header = T)
+HD <-read.csv("data to manage/house data/house data1.csv", header = T)
 
 sum(is.na(HD))
 sum(is.na(HD$Date))
