@@ -1,0 +1,178 @@
+"New housing price index, monthly 1 2 3 4"			
+Monthly			
+Table: 18-10-0205-01 (formerly CANSIM 327-0056)			
+"Geography: Canada, Geographical region of Canada, Province or territory, Census metropolitan area, Census agglomeration"			
+			
+	Ontario 5		
+Reference period	Total (house and land)	House only	Land only
+	"Index, 201612=100"		
+Jan-04	66.4	61	79.2
+Feb-04	66.7	61.4	79.3
+Mar-04	66.9	61.6	79.3
+Apr-04	67.5	62.3	80
+May-04	68.2	63	80.4
+Jun-04	68.8	63.5	81.2
+Jul-04	68.8	63.6	81.2
+Aug-04	69.2	63.9	81.8
+Sep-04	69.3	64	81.8
+Oct-04	69.4	64.2	81.9
+Nov-04	69.7	64.5	81.9
+Dec-04	69.9	64.7	82.2
+Jan-05	70	64.9	82.3
+Feb-05	70.2	65	82.5
+Mar-05	70.5	65.2	83.1
+Apr-05	70.8	65.6	83.3
+May-05	71.2	66	83.3
+Jun-05	71.8	66	85.4
+Jul-05	71.9	66.2	85.4
+Aug-05	72	66.3	85.5
+Sep-05	72.2	66.5	85.8
+Oct-05	72.5	66.9	85.8
+Nov-05	72.6	67	85.8
+Dec-05	72.6	67	85.8
+Jan-06	73.1	67.5	86
+Feb-06	73.3	67.7	86.3
+Mar-06	73.4	67.9	86.3
+Apr-06	73.6	68.2	86.3
+May-06	73.8	68.4	86.5
+Jun-06	74.1	68.7	86.8
+Jul-06	74.4	69.1	87.1
+Aug-06	74.8	69.6	87.2
+Sep-06	74.9	69.6	87.2
+Oct-06	74.8	69.6	87.2
+Nov-06	75.1	69.8	87.4
+Dec-06	75.1	69.9	87.5
+Jan-07	75.2	69.9	87.5
+Feb-07	75.3	70	87.6
+Mar-07	75.4	70	88.1
+Apr-07	75.4	70	88.1
+May-07	75.7	70.4	88.3
+Jun-07	76.1	70.7	88.5
+Jul-07	76.2	70.9	88.5
+Aug-07	76.5	71.3	88.5
+Sep-07	76.7	71.6	88.6
+Oct-07	76.7	71.6	88.6
+Nov-07	77.2	72.2	88.9
+Dec-07	77.3	72.3	89
+Jan-08	78	73.1	89.4
+Feb-08	78.4	73.5	89.7
+Mar-08	78.6	73.7	90.1
+Apr-08	78.7	73.8	90.2
+May-08	78.7	73.8	90.2
+Jun-08	79	74.2	90.2
+Jul-08	79	74.2	90.2
+Aug-08	79.1	74.4	90.2
+Sep-08	79.1	74.4	90.2
+Oct-08	79.1	74.3	90.2
+Nov-08	79	74.2	90.2
+Dec-08	79.1	74.3	90.2
+Jan-09	79.1	74.3	90.2
+Feb-09	79.1	74.3	90.2
+Mar-09	78.9	74.1	90.2
+Apr-09	78.5	73.5	90.2
+May-09	78.3	73.2	90.2
+Jun-09	78.3	73.1	90.2
+Jul-09	78.4	73.3	90.2
+Aug-09	78.5	73.4	90.2
+Sep-09	78.9	73.9	90.3
+Oct-09	79.1	74.2	90.3
+Nov-09	79.4	74.6	90.5
+Dec-09	79.9	75.2	90.6
+Jan-10	80.2	75.7	90.6
+Feb-10	80	75.6	89.9
+Mar-10	80.2	76.1	89.3
+Apr-10	80.3	76.3	89.3
+May-10	80.7	76.9	89.1
+Jun-10	80.9	77.2	89.1
+Jul-10	80.8	77.1	89
+Aug-10	81	77.4	89.1
+Sep-10	81	77.4	89.1
+Oct-10	81.2	77.6	89.1
+Nov-10	81.5	78.1	89.1
+Dec-10	81.6	77.9	89.4
+Jan-11	81.8	78.2	89.4
+Feb-11	82.2	78.7	89.5
+Mar-11	82.3	78.9	89.6
+Apr-11	82.8	79.6	89.6
+May-11	83.3	80.2	90
+Jun-11	83.8	80.9	90.1
+Jul-11	84	81.1	90.3
+Aug-11	84.2	81.3	90.5
+Sep-11	84.4	81.5	90.7
+Oct-11	84.7	81.7	90.9
+Nov-11	85.3	82.3	91.4
+Dec-11	85.4	82.5	91.7
+Jan-12	85.5	82.6	91.8
+Feb-12	85.9	83	91.8
+Mar-12	86.3	83.5	92.1
+Apr-12	86.5	83.8	92.1
+May-12	86.9	84.3	92.4
+Jun-12	87.2	84.7	92.7
+Jul-12	87.3	84.7	92.7
+Aug-12	87.5	84.9	92.9
+Sep-12	87.8	85.3	93.1
+Oct-12	88	85.6	93.1
+Nov-12	88.2	85.9	93.2
+Dec-12	88.4	86.1	93.3
+Jan-13	88.5	86.3	93.3
+Feb-13	88.5	86.1	93.4
+Mar-13	88.6	86.2	93.5
+Apr-13	88.7	86.3	93.5
+May-13	88.8	86.5	93.6
+Jun-13	88.8	86.5	93.6
+Jul-13	89	86.7	93.6
+Aug-13	89.1	86.8	93.7
+Sep-13	89.1	86.8	93.7
+Oct-13	89.2	86.9	93.7
+Nov-13	89.3	87.1	93.7
+Dec-13	89.4	87.3	93.8
+Jan-14	89.5	87.4	93.8
+Feb-14	89.8	87.7	93.9
+Mar-14	89.8	87.7	93.9
+Apr-14	90.2	88.3	93.9
+May-14	90.2	88.3	94
+Jun-14	90.4	88.7	94
+Jul-14	90.4	88.6	94
+Aug-14	90.7	89	94
+Sep-14	90.9	89.3	94
+Oct-14	91	89.3	94.1
+Nov-14	91.1	89.4	94.2
+Dec-14	91.2	89.6	94.3
+Jan-15	91.2	89.5	94.5
+Feb-15	91.4	89.8	94.5
+Mar-15	91.6	90.2	94.5
+Apr-15	91.8	90.4	94.5
+May-15	92.1	90.4	95.8
+Jun-15	92.6	90.9	96.2
+Jul-15	92.8	91.2	96.2
+Aug-15	93.3	91.8	96.4
+Sep-15	93.4	92	96.4
+Oct-15	93.8	92.4	96.6
+Nov-15	93.9	92.6	96.7
+Dec-15	94.1	92.8	96.7
+Jan-16	94.2	93	96.7
+Feb-16	94.6	93.6	96.6
+Mar-16	94.8	93.9	96.6
+Apr-16	95.3	94.6	96.8
+May-16	96.6	96.4	97.1
+Jun-16	97	96.8	97.4
+Jul-16	97.8	97.8	97.6
+Aug-16	98.2	98.4	97.6
+Sep-16	98.5	98.5	98.1
+Oct-16	99.5	99.6	99.1
+Nov-16	99.9	99.8	100
+Dec-16	100	100	100
+Jan-17	100.3	99.9	100.9
+			
+Symbol legend:			
+			
+Footnotes:			
+1	"This table replaces table 18-10-0052 which was archived with the release of January 2017 data. Data for periods prior to December 2016 were obtained by linking the current New Housing Price Index (NHPI) series, where possible, to indexes in table 18-10-0052."		
+2	"Beginning in December 2016, several changes have been made to the New Housing Price Index (NHPI). The census metropolitan areas (CMAs) of Kelowna, Guelph, Trois-Rivières and Sherbrooke are included in the NHPI basket. Separate indexes are published for the census metropolitan areas (CMAs) of Toronto, Oshawa, Ottawa-Gatineau (Ontario part), Ottawa-Gatineau (Quebec part) and Greater Sudbury. The New Housing Price Index no longer includes Thunder Bay."		
+3	"The index base period, for which the New Housing Price Index (NHPI) equals 100, is December 2016."		
+4	"New Housing price indexes denoted with the data quality indicator “E”, should be used with caution."		
+5	"Beginning in December 2016, the census metropolitan area (CMA) of Guelph is included in the provincial aggregate for Ontario."		
+6			
+"How to cite: Statistics Canada. Table 18-10-0205-01 New housing price index, monthly"			
+https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810020501			
+DOI: https://doi.org/10.25318/1810020501-eng			
