@@ -8,10 +8,10 @@ library(data.table)
 
 ##Import lake wq data (Final_wq_data_1) and housing data with real price (clean_HPI_HD_real_price)
 
-v_lake <- read.csv("C:/Users/rar727/OneDrive - University of Saskatchewan/rash/final data/wq/Final_wq_data_1.csv", header = T)
+v_lake <- read.csv("final data/wq/Final_wq_data_1.csv", header = T)
 
 ##I insert a new column "ID" in "clean_HPI_HD_real_price" and then import
-w_house <- read.csv("C:/Users/rar727/OneDrive - University of Saskatchewan/rash/final data/HPI/clean_HPI_HD_real_price.csv", header = T)
+w_house <- read.csv("final data/HPI/clean_HPI_HD_real_price.csv", header = T)
 
 
 ## create two different subset from v_lake & w_house data (one for house coordinates(w) & one for lake coordinates(v))
