@@ -1,4 +1,6 @@
+rm(list=ls(all=TRUE))
 
+library(tidyverse)
 ##Merge housing data and shortest distance data
 
 ##Merge House data (price, area, sold year) and shortest lake distance based on "ID", "latitude and longitude (house)" (clean_HPI_HD_real_price and Final_shortest_dist)
@@ -24,8 +26,10 @@ Final_wq_data_1 <-read.csv("final data/wq/Final_wq_data_1.csv", header = T)
 F_wq_data_1 <-subset(Final_wq_data_1, select = c("Lake_ID", "Year", "meanTP_yearly", "Secchi.depth_avg"))
 
 ##marge house data & shortest lake distance (HP_HSD_merge) and wq (F_wq_data_1) data ->> (Final_marged_wq_HD_SD)
-Final_merge_wq_HD_SD <- merge(F_wq_data_1, HP_HSD_merge,by=c("Year", "Lake_ID"), all=TRUE)
-Final <- na.omit(Final_merge_wq_HD_SD )
+Final_merge_wq_HD_SD <- left_join(HP_HSD_merge, F_wq_data_1, by=c("Year", "Lake_ID"))
+
+summary(Final_merge_wq_HD_SD)
+#Final <- na.omit(Final_merge_wq_HD_SD )
 
 
 

@@ -31,7 +31,6 @@ Final_marged_HPI_HD$Real_price <- Final_marged_HPI_HD$HPI * Final_marged_HPI_HD$
 clean_HPI_HD_real_price <- Final_marged_HPI_HD
 
 ## Export r file as .csv
-install.packages("rio")
 library("rio")
 export(clean_HPI_HD_real_price, "clean_HPI_HD_real_price.csv")
 

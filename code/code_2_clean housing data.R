@@ -38,7 +38,6 @@ clean_HD$Date <- format(as.Date(clean_HD$date, format="%m/%d/%Y"),"%Y/%m")
 clean_HD_sub<-subset(clean_HD,select = c("Year", "Date","Latitude", "Longitude", "area", "house_price"))
 
 ## Export r file as .csv
-install.packages("rio")
 library("rio")
 export(clean_HD_sub, "clean_HD_sub.csv")
 

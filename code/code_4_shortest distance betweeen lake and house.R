@@ -1,9 +1,9 @@
 ####Shortest distance calculation between lake and house location
 
+# Cleans environment
+rm(list=ls(all=TRUE))
 ##Calculate shortest distance between house and lake station
-install.packages(geosphere)
 library(geosphere)
-install.packages("data.table")
 library(data.table)
 
 ##Import lake wq data (Final_wq_data_1) and housing data with real price (clean_HPI_HD_real_price)
@@ -21,7 +21,6 @@ v <-subset(v_lake,select = c("Lake_ID","Latitude", "Longitude"))
 w <-subset(w_house,select = c("ID","Latitude", "Longitude"))
 
 
-library(data.table)
 #Euclidean distance 
 mydist <- function(a, b, w, x, y){
   
@@ -42,7 +41,6 @@ colnames(Final_shortest_dist)[4] <- "Lake_ID"
 colnames(Final_shortest_dist)[5] <- "shortest_distance"
 
 ## Export r file as .csv
-install.packages("rio")
 library("rio")
 export(Final_shortest_dist, "Final_shortest_dist.csv")
 
