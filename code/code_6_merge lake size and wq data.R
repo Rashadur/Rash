@@ -4,10 +4,10 @@
 
 ## Import data
 ## Import wq data
-wq <-read.csv("C:/Users/rar727/OneDrive - University of Saskatchewan/rash/final data/wq/Final_wq_data_1.csv", header = T)
+wq <-read.csv("final data/wq/Final_wq_data_1.csv", header = T)
 
 ##Import lake size data (Lake_size)
-Lake_size <-read.csv("C:/Users/rar727/OneDrive - University of Saskatchewan/rash/data to manage/lake size/Lake_size.csv", header = T)
+Lake_size <-read.csv("data to manage/lake size/Lake_size.csv", header = T)
 
 ##lake names in lower case for WQ data
 h <- data.frame(Lake_Name=tolower(wq$Lake.Name))
