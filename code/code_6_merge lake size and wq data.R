@@ -1,5 +1,6 @@
 ####Merge lake size data with WQ data
 
+library(data.table)
 ## Import data
 ## Import wq data
 wq <-read.csv("final data/wq/Final_wq_data_1.csv", header = T)
@@ -30,7 +31,7 @@ Q<-lake_size_low_final
 P<- wq_low_final
 Q<-lake_size_low_final
 
-library(data.table)
+
 #Euclidean distance 
 mydist <- function(a, b, P, x, y){
   
