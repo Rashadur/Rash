@@ -1,6 +1,10 @@
 ####Merge lake size data with WQ data
 
+library(tidyverse)
+library(dplyr)
 library(data.table)
+library(rio)
+
 ## Import data
 ## Import wq data
 wq <-read.csv("final data/wq/Final_wq_data_1.csv", header = T)
@@ -12,11 +16,14 @@ Lake_size <-read.csv("data to manage/lake size/Lake_ID.csv", header = T)
 ##lake names in lower case for WQ data
 h <- data.frame(Lake_Name=tolower(wq$Lake.Name))
 wq_low <- cbind(wq,h)
-wq_low_final<-subset(wq_low,select = c("Lake_ID", "Lake_Name", "STN","Site.ID","Latitude", "Longitude"))
+wq_low_final<-subset(wq_low,select = c("Lake_ID", "STN", "Site.ID", "Lake_Name","Latitude", "Longitude"))
 
 ## Remove apostrophe "s" from "Lake_Name" in wq data
 wq_low_final$Lake_Name <- gsub("'", '', wq_low_final$Lake_Name)
-P<- wq_low_final
+
+## Unique lakes by name
+wq_low_unique <- distinct(wq_low_final, Lake_Name, .keep_all= TRUE)
+P<- wq_low_unique
 
 ##lake names in lower case for lake size data
 h1 <- data.frame(Lake_Name=tolower(Lake_size$Lake.Name))
@@ -28,7 +35,7 @@ lake_size_low_final$Lake_Name <- gsub("'", '', lake_size_low_final$Lake_Name)
 Q<-lake_size_low_final
 
 ## Closest lake 
-P<- wq_low_final
+P<- wq_low_unique
 Q<-lake_size_low_final
 
 
@@ -50,15 +57,18 @@ PQ <- setDT(P)[, j = mydist(Latitude, Longitude, setDT(Q),
 colnames(PQ)[4] <- "L_ID"
 colnames(Q)[3] <- "L_Latitude"
 colnames(Q)[4] <- "L_Longitude"
-colnames(P)[2] <- "lake.name"
-
+colnames(Q)[2] <- "L_Lake_Name"
 
 ## Join 
-library(dplyr)
-PQ_join <-merge(x=PQ,y=Q,by="L_ID",all.x=TRUE)
-PQ_join_wq <-merge(x=P,y=PQ_join,by= c("Lake_ID", "Latitude", "Longitude"),all.x=TRUE)
-Final_lake_size_wq <- merge(x=wq,y=PQ_join_wq,by= c("Lake_ID", "Latitude", "Longitude", "STN", "Site.ID"),all.x=TRUE)
-Final_lake_size_wq <-subset(Final_lake_size_wq,select = c("Lake_ID", "lake.name", "Latitude", "Longitude", "STN", "Site.ID", "Lake_Name","L_Latitude", "L_Longitude", "Year","meanTP_yearly", "Secchi.depth_avg", "Lake.Area"))
+##Left_join (P and PQ)
+PP <- left_join(P, PQ)
+PP_Q <- left_join(PP, Q)
 
+##Subset of PP_Q
+PP_Q_sub <- subset(PP_Q,select = c("Lake_Name", "Lake.Area"))
 
+##Left_join (wq_low_final and PP_Q_sub)
+Final_wq_lake_size <- left_join(wq_low_final, PP_Q_sub)
 
+##Export data
+export(Final_wq_lake_size , "Final_wq_lake_size.csv")
