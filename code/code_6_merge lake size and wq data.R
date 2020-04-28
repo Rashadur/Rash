@@ -16,7 +16,7 @@ Lake_size <-read.csv("data to manage/lake size/Lake_ID.csv", header = T)
 ##lake names in lower case for WQ data
 h <- data.frame(Lake_Name=tolower(wq$Lake.Name))
 wq_low <- cbind(wq,h)
-wq_low_final<-subset(wq_low,select = c("Lake_ID", "STN", "Site.ID", "Lake_Name","Latitude", "Longitude"))
+wq_low_final<-subset(wq_low,select = c("Lake_ID", "STN", "Site.ID", "Lake_Name","Latitude", "Longitude", "meanTP_yearly", "Secchi.depth_avg"))
 
 ## Remove apostrophe "s" from "Lake_Name" in wq data
 wq_low_final$Lake_Name <- gsub("'", '', wq_low_final$Lake_Name)
