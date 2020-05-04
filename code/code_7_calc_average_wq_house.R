@@ -1,3 +1,7 @@
+# Calculates average WQ within certain threshold as well as closest WQ station by year
+
+# Cleans environment
+rm(list=ls(all=TRUE))
 
 # load packages
 library(tidyverse)
