@@ -1,0 +1,489 @@
+
+
+####Shortest distance calculation between house locationS AND NEAREST CITY/TOWN
+
+#-----------------------------------------------------
+# Calculates average WQ within certain threshold as well as closest WQ station by year
+#merge HP, HSD and avg. WQ of the closest station
+##Calculate shortest distance between house and lake station
+# merge closest city data with HP, HSD and avg. WQ of the closest station
+#-----------------------------------------------------
+
+# Calculates average WQ within certain threshold as well as closest WQ station by year
+
+# Cleans environment
+rm(list=ls(all=TRUE))
+
+# load packages
+library(tidyverse)
+library(data.table)
+library(spatialrisk)
+library(geosphere)
+library(dplyr)
+library("rio")
+
+
+# Function to calculate WQ variables
+
+CalcWQVariables <- function(df_wq, # Wq data
+                            df_house, # Single row of housing data
+                            dist_metres) # distance thresholds for radius
+{
+  
+  # Filter out WQ data for particular year
+  df_wq <- df_wq[df_wq$Year == df_house$Year, ]
+  
+  # Calculate distance between house and all stations within year
+  points <- points_in_circle(df_wq, df_house$Longitude, df_house$Latitude, radius = 2000000000) # metres
+  
+  # Return closest station
+  closest <- points[which.min(points$distance_m),]
+  
+  # Return all stations within threshold distance
+  points <- points[points$distance_m < dist_metres,]
+  
+  out <- df_house %>%
+    mutate(
+      # take average of WQ within threshold
+      meanTP = mean(points$meanTP_yearly),
+      meanSecchi = mean(points$Secchi.depth_avg),
+      # How many stations average based on
+      n_stations = nrow(points),
+      # Return closest WQ station and data
+      distance_m = closest$distance_m,
+      closeTP = closest$meanTP_yearly,
+      closeSecchi = closest$Secchi.depth_avg)
+  
+  return(out)
+}
+
+# Distance threshold to use (in metres)
+dist_metres <- 3000
+
+# load data
+v_lake <- read.csv("final data/wq/Final_wq_lake_size.csv", header = T)
+w_house <- read.csv("final data/HPI/clean_HPI_HD_real_price.csv", header = T)
+
+df_wq <- v_lake %>%
+  select(Year, Latitude, Longitude, meanTP_yearly, Secchi.depth_avg) %>%
+  rename(lon = Longitude,
+         lat = Latitude)
+
+summary(df_wq)
+
+# Split housing data into lists for use in purrr:map
+df_house <- split(w_house, w_house$ID)
+
+
+df_wq_link <- map_dfr(df_house, CalcWQVariables, 
+                      df_wq = df_wq, 
+                      dist_metres = dist_metres)
+
+write_csv(df_wq_link, "final data/house data/wq_house_merged.csv")
+
+##############
+
+## Import house price data (clean_HPI_HD_real_price)
+HP <-read.csv("final data/HPI/clean_HPI_HD_real_price.csv", header = T)
+
+## Import shortest distance data (Final_shortest_dist)
+HSD <-read.csv("final data/shortest dist/Final_shortest_dist.csv", header = T)
+
+## Subset of house data and shortest distance data
+HP_sub <- subset(HP, select = c("ID", "Latitude", "Longitude", "Year", "area", "Real_price"))
+HSD_sub <- subset(HSD, select = c("ID", "Latitude", "Longitude", "Lake_ID", "shortest_distance"))
+
+##jOin HP_sub and HSD_sub
+##left join                                                                                                                                                                                                        
+HP_HSD <- left_join(HP_sub, HSD_sub)
+
+v_lake_1 <- subset(v_lake, select = c("Lake_ID", "Lake.Area"))
+
+HP_HSD_1 <- left_join(HP_HSD, v_lake_1)
+
+HP_HSD_WQ <- left_join(HP_HSD_1, df_wq_link)
+
+
+##Calculate shortest distance between house and nearest city
+
+##Import lake wq data (Final_wq_data_1) and housing data with real price (clean_HPI_HD_real_price)
+
+v_lake <- read.csv("scratch/exp_locations.csv", header = T)
+
+##I insert a new column "ID" in "clean_HPI_HD_real_price" and then import
+w_house <- read.csv("final data/HPI/clean_HPI_HD_real_price.csv", header = T)
+
+
+## create two different subset from v_lake & w_house data (one for house coordinates(w) & one for lake coordinates(v))
+
+v <-subset(v_lake,select = c("c_ID","Latitude", "Longitude"))
+
+w <-subset(w_house,select = c("ID","Latitude", "Longitude"))
+
+
+library(data.table)
+#Euclidean distance 
+mydist <- function(a, b, w, x, y){
+  
+  dt <- data.table(sqrt((w[[x]]-a)^2 + (w[[y]]-b)^2))
+  
+  return(data.table(Closest.V1  = which.min(dt$V1),
+                    Distance    = dt[which.min(dt$V1)]))
+}
+
+Final_shortest_dist <- setDT(w)[, j = mydist(Latitude, Longitude, setDT(v), 
+                                             "Latitude", "Longitude"), 
+                                by = list(ID, Latitude, Longitude)]
+
+##Change the colamn name "Closest.V1" to "c_ID"
+colnames(Final_shortest_dist)[4] <- "c_ID"
+
+##Change the colamn name "distance.V1" to "city_distance"
+colnames(Final_shortest_dist)[5] <- "city_distance"
+
+city_distance <-Final_shortest_dist
+
+#merge HP_HSD_WQ and city_distance
+
+HP_HSD_WQ_city <- left_join(HP_HSD_WQ, city_distance)
+
+Final_data_city <-subset(HP_HSD_WQ_city, select = c("Real_price","Year", "area", "shortest_distance","Lake.Area", "distance_m", "closeTP", "closeSecchi", "city_distance", "c_ID", "Latitude", "Longitude"))
+
+## model calculation
+
+
+##Change the colamn name "Closest.V1" to "L_ID"
+colnames(Final_data_city)[6] <- "Distance"
+colnames(Final_data_city)[7] <- "Total_phosphorus"
+colnames(Final_data_city)[8] <- "Secchi_depth"
+colnames(Final_data_city)[3] <- "Lot_size"
+
+df <- Final_data_city
+
+
+# Take log for Real_price
+df1<- subset(df,select = c(Real_price, Distance))
+l_Real_price <- log(df1[,c(1)])
+l_Distance <- log(df1[,c(2)])
+
+df2 <- data.frame(l_Real_price)
+df3 <- data.frame(l_Distance)
+df <- cbind(df, df2, df3)
+
+
+
+#To get the regression results in table format 
+library(stargazer)
+stargazer(reg,reg1, type = "text")
+
+
+# 1. Baseline regression (distance-Pat)
+xs <- c("Lot_size", "Distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance")
+f <- paste("Real_price ~",paste(xs, collapse=" + "))
+reg <- lm(as.formula(f), data=df)
+summary(reg)
+
+# 2. Baseline regression (l_Real_price, l_Distance) (distance-Pat)
+xs <- c("Lot_size", "l_Distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg1 <- lm(as.formula(f), data=df)
+summary(reg1)
+
+# 3. Baseline regression (l_Real_price, Distance) (distance-Pat)
+xs <- c("Lot_size", "Distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg1_1 <- lm(as.formula(f), data=df)
+summary(reg1_1)
+
+# 4. Baseline regression (l_Real_price, Distance) (distance-Pat)
+xs <- c("Lot_size", "Year", "Distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg1_2 <- lm(as.formula(f), data=df)
+summary(reg1_2)
+
+# Regression results
+stargazer(reg,reg1, type = "text")
+stargazer(reg1_1, reg1_2, type = "text")
+
+# 5. Baseline regression (distance-Rashed)
+xs <- c("Lot_size", "shortest_distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance")
+f <- paste("Real_price ~",paste(xs, collapse=" + "))
+reg2 <- lm(as.formula(f), data=df)
+summary(reg2)
+
+# 6. Baseline regression (distance-Rashed) (l_Real_price)
+xs <- c("Lot_size", "shortest_distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg2_1 <- lm(as.formula(f), data=df)
+summary(reg2_1)
+
+# 7. Baseline regression (distance-Rashed) (l_Real_price)
+xs <- c("Lot_size", "shortest_distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "Year", "city_distance")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg2_2 <- lm(as.formula(f), data=df)
+summary(reg2_2)
+
+# Regression results
+stargazer(reg2,reg2_1,reg2_2, type = "text")
+
+#-----------------------------------------------------------------
+# I will use four dummy variables for five different cities to observe the impact of city to real price
+#c_ID_dummy_P=Dummy of Peterborough
+#c_ID_dummy_O=Dummy of Orillia 
+#c_ID_dummy_H=Dummy of Huntsville
+#c_ID_dummy_Br=Dummy of Belleville 
+
+
+#-----------------------------------------------------------------
+
+#create dummy variable for Peterborough
+df$c_ID_dummy_P<- ifelse(df$c_ID==1,1,0)
+df$c_ID_dummy_O<- ifelse(df$c_ID==2,1,0)
+df$c_ID_dummy_H<- ifelse(df$c_ID==3,1,0)
+df$c_ID_dummy_Br<- ifelse(df$c_ID==4,1,0)
+
+# 1. Baseline regression (distance-Pat)
+xs <- c("Lot_size", "Distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance", "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br")
+f <- paste("Real_price ~",paste(xs, collapse=" + "))
+reg <- lm(as.formula(f), data=df)
+summary(reg)
+
+# 2. Baseline regression (l_Real_price, l_Distance) (distance-Pat)
+xs <- c("Lot_size", "l_Distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance",  "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg1 <- lm(as.formula(f), data=df)
+summary(reg1)
+
+# 3. Baseline regression (l_Real_price, Distance) (distance-Pat)
+xs <- c("Lot_size", "Distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance",  "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg1_1 <- lm(as.formula(f), data=df)
+summary(reg1_1)
+
+# 4. Baseline regression (l_Real_price, Distance) (distance-Pat)
+xs <- c("Lot_size", "Year", "Distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance",  "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg1_2 <- lm(as.formula(f), data=df)
+summary(reg1_2)
+
+# Regression results
+stargazer(reg,reg1, type = "text")
+stargazer(reg1_1, reg1_2, type = "text")
+
+# 5. Baseline regression (distance-Rashed)
+xs <- c("Lot_size", "shortest_distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance",  "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br")
+f <- paste("Real_price ~",paste(xs, collapse=" + "))
+reg2 <- lm(as.formula(f), data=df)
+summary(reg2)
+
+# 6. Baseline regression (distance-Rashed) (l_Real_price)
+xs <- c("Lot_size", "shortest_distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance",  "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg2_1 <- lm(as.formula(f), data=df)
+summary(reg2_1)
+
+# 7. Baseline regression (distance-Rashed) (l_Real_price)
+xs <- c("Lot_size", "shortest_distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "Year", "city_distance",  "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg2_2 <- lm(as.formula(f), data=df)
+summary(reg2_2)
+
+# Regression results
+stargazer(reg2,reg2_1,reg2_2, type = "text")
+
+
+#-----------------------------------------------------------------
+# I will split the data set on the basis of latitude and longitude
+# 5data sets are Exp_1,Exp_2,Exp_3,Exp_4Exp_5
+
+#-----------------------------------------------------------------
+
+## Data set based on different lat and long values >> reducing the total area
+
+Exp_1 <- filter(df, -79.6571>Longitude)
+Exp_1_1 <- anti_join(df, Exp_1)
+
+Exp_2 <- filter(Exp_1_1, -79.1319>Longitude)
+Exp_2_2 <- anti_join(Exp_1_1, Exp_2)
+
+Exp_3 <- filter(Exp_2_2, -78.6067>Longitude)
+Exp_3_3 <- anti_join(Exp_2_2, Exp_3)
+
+Exp_4 <- filter(Exp_3_3, -78.0815>Longitude)
+Exp_4_4 <- anti_join(Exp_3_3, Exp_4)
+
+Exp_5 <- filter(df, -78.0814<Longitude)
+
+#-----------------------------------------------------------------
+# Calculation for Exp_1
+##I insert a new column "ID" in "Exp_1" and then import
+
+##Regression model with seperate area (Exp_1)
+
+# 1. Baseline regression (distance-Pat)
+xs <- c("Lot_size", "Distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance")
+f <- paste("Real_price ~",paste(xs, collapse=" + "))
+reg <- lm(as.formula(f), data=Exp_1)
+summary(reg)
+
+# 2. Baseline regression (l_Real_price, l_Distance) (distance-Pat)
+xs <- c("Lot_size", "l_Distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg1 <- lm(as.formula(f), data=Exp_1)
+summary(reg1)
+
+# 3. Baseline regression (l_Real_price, Distance) (distance-Pat)
+xs <- c("Lot_size", "Distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg1_1 <- lm(as.formula(f), data=Exp_1)
+summary(reg1_1)
+
+# 4. Baseline regression (l_Real_price, Distance) (distance-Pat)
+xs <- c("Lot_size", "Year", "Distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg1_2 <- lm(as.formula(f), data=Exp_1)
+summary(reg1_2)
+
+# Regression results
+stargazer(reg,reg1, type = "text")
+stargazer(reg1_1, reg1_2, type = "text")
+
+# 5. Baseline regression (distance-Rashed)
+xs <- c("Lot_size", "shortest_distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance")
+f <- paste("Real_price ~",paste(xs, collapse=" + "))
+reg2 <- lm(as.formula(f), data=Exp_1)
+summary(reg2)
+
+# 6. Baseline regression (distance-Rashed) (l_Real_price)
+xs <- c("Lot_size", "shortest_distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg2_1 <- lm(as.formula(f), data=Exp_1)
+summary(reg2_1)
+
+# 7. Baseline regression (distance-Rashed) (l_Real_price)
+xs <- c("Lot_size", "shortest_distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "Year", "city_distance")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg2_2 <- lm(as.formula(f), data=Exp_1)
+summary(reg2_2)
+
+# Regression results Exp_1 with dummy
+stargazer(reg2,reg2_1,reg2_2, type = "text")
+
+# 5. Baseline regression (distance-Rashed)
+xs <- c("Lot_size", "shortest_distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance", "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br")
+f <- paste("Real_price ~",paste(xs, collapse=" + "))
+reg2 <- lm(as.formula(f), data=Exp_1)
+summary(reg2)
+
+# 6. Baseline regression (distance-Rashed) (l_Real_price)
+xs <- c("Lot_size", "shortest_distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance","c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg2_1 <- lm(as.formula(f), data=Exp_1)
+summary(reg2_1)
+
+# 7. Baseline regression (distance-Rashed) (l_Real_price)
+xs <- c("Lot_size", "shortest_distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "Year", "city_distance", "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg2_2 <- lm(as.formula(f), data=Exp_1)
+summary(reg2_2)
+
+# Regression results
+stargazer(reg2,reg2_1,reg2_2, type = "text")
+
+#------------------------------------------------------------------------
+
+##Regression model with seperate area (Exp_2)
+
+# 5. Baseline regression (distance-Rashed)
+xs <- c("Lot_size", "shortest_distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance", "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br")
+f <- paste("Real_price ~",paste(xs, collapse=" + "))
+reg2 <- lm(as.formula(f), data=Exp_2)
+summary(reg2)
+
+# 6. Baseline regression (distance-Rashed) (l_Real_price)
+xs <- c("Lot_size", "shortest_distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance","c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg2_1 <- lm(as.formula(f), data=Exp_2)
+summary(reg2_1)
+
+# 7. Baseline regression (distance-Rashed) (l_Real_price)
+xs <- c("Lot_size", "shortest_distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "Year", "city_distance", "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg2_2 <- lm(as.formula(f), data=Exp_2)
+summary(reg2_2)
+
+# Regression results
+stargazer(reg2,reg2_1,reg2_2, type = "text")
+
+#------------------------------------------------------------
+##Regression model with seperate area (Exp_3)
+
+# 5. Baseline regression (distance-Rashed)
+xs <- c("Lot_size", "shortest_distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance", "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br")
+f <- paste("Real_price ~",paste(xs, collapse=" + "))
+reg2 <- lm(as.formula(f), data=Exp_3)
+summary(reg2)
+
+# 6. Baseline regression (distance-Rashed) (l_Real_price)
+xs <- c("Lot_size", "shortest_distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance","c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg2_1 <- lm(as.formula(f), data=Exp_3)
+summary(reg2_1)
+
+# 7. Baseline regression (distance-Rashed) (l_Real_price)
+xs <- c("Lot_size", "shortest_distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "Year", "city_distance", "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg2_2 <- lm(as.formula(f), data=Exp_3)
+summary(reg2_2)
+
+# Regression results
+stargazer(reg2,reg2_1,reg2_2, type = "text")
+#---------------------------------------------------------------
+
+##Regression model with seperate area (Exp_4)
+
+# 5. Baseline regression (distance-Rashed)
+xs <- c("Lot_size", "shortest_distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance", "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br")
+f <- paste("Real_price ~",paste(xs, collapse=" + "))
+reg2 <- lm(as.formula(f), data=Exp_4)
+summary(reg2)
+
+# 6. Baseline regression (distance-Rashed) (l_Real_price)
+xs <- c("Lot_size", "shortest_distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance","c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg2_1 <- lm(as.formula(f), data=Exp_4)
+summary(reg2_1)
+
+# 7. Baseline regression (distance-Rashed) (l_Real_price)
+xs <- c("Lot_size", "shortest_distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "Year", "city_distance", "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg2_2 <- lm(as.formula(f), data=Exp_4)
+summary(reg2_2)
+
+# Regression results
+stargazer(reg2,reg2_1,reg2_2, type = "text")
+
+#-----------------------------------------------------
+
+##Regression model with seperate area (Exp_5)
+
+# 5. Baseline regression (distance-Rashed)
+xs <- c("Lot_size", "shortest_distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance", "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br")
+f <- paste("Real_price ~",paste(xs, collapse=" + "))
+reg2 <- lm(as.formula(f), data=Exp_5)
+summary(reg2)
+
+# 6. Baseline regression (distance-Rashed) (l_Real_price)
+xs <- c("Lot_size", "shortest_distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "city_distance","c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg2_1 <- lm(as.formula(f), data=Exp_5)
+summary(reg2_1)
+
+# 7. Baseline regression (distance-Rashed) (l_Real_price)
+xs <- c("Lot_size", "shortest_distance", "Lake.Area", "Total_phosphorus", "Secchi_depth", "Year", "city_distance", "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg2_2 <- lm(as.formula(f), data=Exp_5)
+summary(reg2_2)
+
+# Regression results
+stargazer(reg2,reg2_1,reg2_2, type = "text")
