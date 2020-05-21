@@ -79,7 +79,6 @@ df_wq_link <- map_dfr(df_house, CalcWQVariables,
                       df_wq = df_wq, 
                       dist_metres = dist_metres)
 
-write_csv(df_wq_link, "final data/house data/wq_house_merged.csv")
 
 ##############
 
