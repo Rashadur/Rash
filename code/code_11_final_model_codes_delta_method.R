@@ -95,6 +95,7 @@ stargazer(reg_model_5, type = "text")
 #-----------------------------------------
 
 average_price <- mean(df$Real_price)
+average_l_Distance <- mean(df$l_Distance)
 deltaMethod(reg_model_5, "Secchi_depth + (Distance_SD*average_l_Distance)")
 ## For lake distance=1meter [ln(1)=0]
 deltaMethod(reg_model_5, "Secchi_depth + (Distance_SD*0)")
