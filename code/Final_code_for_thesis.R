@@ -91,7 +91,7 @@ export(dms_data_set_1_TP, "dms_data_set_1_TP.csv")
 
 ## Import "Final_clean_data_set_1_TP" (C:\Users\rar727\OneDrive - University of Saskatchewan\rash\data to manage\clean lat_long data\FINAL DATA DMS TO DD)
 
-Final_clean_data_set_1_TP <-read.csv("data to manage/clean lat_long data/FINAL DATA DMS TO DD/Final_clean_data_set_1_TP.csv", header = T)
+Final_clean_data_set_1_TP <-read.csv("data to manage/Final_clean_data_set_1_TP.csv", header = T)
 
 ## Import lake data_Secchi_depth (Lake_2) 
 
@@ -133,7 +133,7 @@ export(dms_data_set_2_SD, "dms_data_set_2_SD.csv")
 #take -(d_long+m_long/60+s_long/3600) as longitude data and saved the file as "Final_clean_data2". Then import the data
 ## Import "Final_clean_data_set_2_SD" (C:\Users\rar727\OneDrive - University of Saskatchewan\rash\data to manage\clean lat_long data\FINAL DATA DMS TO DD)
 
-Final_clean_data_set_2_SD <-read.csv("data to manage/clean lat_long data/FINAL DATA DMS TO DD/Final_clean_data_set_2_SD.csv", header = T)
+Final_clean_data_set_2_SD <-read.csv("data to manage/Final_clean_data_set_2_SD.csv", header = T)
 
 
 ##Final managed data from data1 (Final_clean_data1) and data2 (Final_clean_data2)
@@ -150,7 +150,7 @@ Final_data_set_marged_omit <- na.omit(Final_data_set_marged)
 ##Add "Lake_ID" to "Final_wq_data" 
 ## I add a new column "Lake_ID" to edit_lat_long data
 
-edit_lat_long <- read.csv("data to manage/TP_SD_with_specidic_lat_long/Final_data_set_marged_omit.csv", header = T)
+edit_lat_long <- read.csv("data to manage/Final_data_set_marged_omit.csv", header = T)
 
 # Unique lakes
 unique_lake_new <- distinct(edit_lat_long, Lake.Name, .keep_all= TRUE)
@@ -216,7 +216,7 @@ clean_data_HPI<-subset(data_HPI,select = c("Date", "HPI"))
 ## Adjust house price with HPI
 
 ##Import clean house data "clean_HD_sub"
-clean_HD_sub <- read.csv("C:/Users/rar727/OneDrive - University of Saskatchewan/rash/final data/house data/clean_HD_sub.csv", header = T)
+clean_HD_sub <- read.csv("final data/house data/clean_HD_sub.csv", header = T)
 
 ##Merge HPI and housing price based on "Date" (clean_data_HPI and clean_HD_sub)
 marged_HPI_HD <- merge(clean_data_HPI, clean_HD_sub,by=c("Date"),all=TRUE)
@@ -446,14 +446,14 @@ sum(is.na(Final_data))
 #--------------------------
 ##Calculate shortest distance between house and nearest city
 
-v_lake <- read.csv("data to manage/exp_locations.csv", header = T)
+i_lake <- read.csv("data to manage/exp_locations.csv", header = T)
 
 ##I insert a new column "ID" in "clean_HPI_HD_real_price" and then import
 w_house <- read.csv("final data/HPI/clean_HPI_HD_real_price.csv", header = T)
 
 ## create two different subset from v_lake & w_house data (one for house coordinates(w) & one for lake coordinates(v))
 
-v <-subset(v_lake,select = c("c_ID","Latitude", "Longitude"))
+v <-subset(i_lake,select = c("c_ID","Latitude", "Longitude"))
 w <-subset(w_house,select = c("ID","Latitude", "Longitude"))
 
 #Euclidean distance 
