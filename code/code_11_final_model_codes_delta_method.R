@@ -16,6 +16,7 @@ library(broom.mixed)
 library(margins)
 
 ## (Table 1)Base model (distance-Pat) (l_Real_price) 
+# To observe the relationship between WQ variables and house price
 #--------------------------------------------------------
 xs <- c("Secchi_depth", "Total_phosphorus")
 f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
@@ -46,6 +47,7 @@ reg_model_1 <- lm(as.formula(f), data=df)
 stargazer(reg_model_1, type = "text")
 
 ## Table 3= Model 2, Model 3, Model 4 (only single WQ variable)
+## to observe how relationship changes with different WQ measures
 #--------------------------------------------------------------------
 ## Model 2:	Only SD as WQ variable
 xs <- c("l_Lot_size", "l_Distance", "l_Lake.Area","Secchi_depth", "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br",
@@ -170,8 +172,8 @@ ggplot(data = u, aes(x = factor(MWTP,level = level_order),  y = `Estimate`, ymin
   geom_hline(yintercept = 1, lty = 2) +
   xlab("Lake Distance") + ylab("MWTP for TP with 95% Confidence Interval")   + # Labels
   theme_bw()  # Nicer theme
+#------------------------------------
 
-    
 ## Model 6: SD, TP, TP*l_distance
 xs <- c("l_Lot_size", "l_Distance", "l_Lake.Area","Secchi_depth", "Total_phosphorus","Distance_TP",
         "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br",
@@ -334,6 +336,7 @@ ggplot(data = y, aes(x = factor(MWTP,level = level_order), y = `Estimate`, ymin 
   geom_hline(yintercept = 1, lty = 2) +
   xlab("Lake Distance") + ylab("MWTP for SD with 95% Confidence Interval")   + # Labels
   theme_bw()  # Nicer theme
+#---------------------------------------------------------------------
 
 ## Model 8: SD, TP, TP*lake distance dummy
 
@@ -411,6 +414,7 @@ ggplot(data = y, aes(x = factor(MWTP,level = level_order), y = `Estimate`, ymin 
   theme_bw()  # Nicer theme
 
 stargazer(reg_model_5, reg_model_6, reg_model_7, reg_model_8,  type = "text")
+#-------------------------------------------------------------
 
 ## Table 5: model 10 (SD*TP, SD*l_distance), model 11(SD*TP, TP*l_distance)
 #-------------------------------------------------------------
@@ -472,6 +476,7 @@ ggplot(data = e, aes(x = factor(MWTP,level = level_order), y = `Estimate`, ymin 
   geom_hline(yintercept = 1, lty = 2) +
   xlab("Lake Distance") + ylab("MWTP for SD with 95% Confidence Interval")   + # Labels
   theme_bw()  # Nicer theme
+#-------------------------------------------------------------------------------------------
 
 ## For TP=9.43
 
@@ -542,6 +547,9 @@ deltaMethod(reg_model_10, "Secchi_depth + (Distance_SD*7.600902459542082) + (int
 deltaMethod(reg_model_10, "Secchi_depth + (Distance_SD*8.006367567650246) + (interact_SD_TP*6.43)")
 
 ## For TP=5.43
+#----------------------------------------------
+## If the TP level is decreased at 5.43 microgram per liter, then the MWTP of SD for houses 
+## located in different lake distances are-
 
 ## For lake distance=1meter [ln(1)=0] & TP=5.43
 deltaMethod(reg_model_10, "Secchi_depth + (Distance_SD*0) + (interact_SD_TP*5.43)")
@@ -592,6 +600,7 @@ ggplot(data = z, aes(x = factor(MWTP,level = level_order), y = `Estimate`, ymin 
 
 # Regression results
 stargazer(reg_model_10, type = "text")
+#-------------------------------------------------------------------
 
 ## Model 11:	Interacted variables SD*TP, TP*l_distance
 
@@ -604,9 +613,7 @@ reg_model_11 <- lm(as.formula(f), data=df)
 stargazer(reg_model_11, type = "text")
 
 stargazer(reg_model_10,reg_model_11, type = "text")
-
-##------------
-##------------
+#--------------------------------------------------------
 
 
 ## Plot average marginal effect (AME) with upper & lower bound
@@ -625,7 +632,6 @@ ggplot(data =i) +
 
 # plot coefficients of multiple models
 #--------------------------------------------------------------------------------
-
 library(jtools)
 library(ggstance)
 library(broom.mixed)
