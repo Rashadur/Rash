@@ -171,7 +171,7 @@ ggplot(data = u, aes(x = factor(MWTP,level = level_order),  y = `Estimate`, ymin
   geom_errorbar()+
   geom_boxplot()+
   geom_hline(yintercept = 1, lty = 2) +
-  xlab("Lake Distance") + ylab("MWTP for TP with 95% Confidence Interval")   + # Labels
+  xlab("Lake Distance") + ylab("MWTP for SD with 95% Confidence Interval")   + # Labels
   theme_bw()  # Nicer theme
 #------------------------------------
 
