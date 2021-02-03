@@ -1,0 +1,727 @@
+
+
+# CODE-1
+#-------
+
+# Cleans environment
+rm(list=ls(all=TRUE))
+
+# Install packages
+
+library(rio)
+library(tidyverse)
+library(lubridate)
+library(geosphere)
+library(plyr)
+library(data.table)
+library(dplyr)
+library(spatialrisk)
+library(stargazer)
+library(car)
+library(jtools)
+library(ggstance)
+library(broom.mixed)
+library(margins)
+
+##cLEAN WATER QUALITY DATA
+##Water quality data management
+#------------------------------
+
+## Import lake data_TP1&TP2(Lake_1) 
+##I import lake_1 & lake_2 water quality data from (C:\Users\rar727\OneDrive - University of Saskatchewan\rash\data to manage)
+
+data1 <-read.csv("data to manage/Lake_1.csv", header = T)
+## Import lake data_Secchi_depth (Lake_2) 
+data2 <-read.csv("data to manage/Lake_2.csv", header = T)
+## Import house data (house data1) 
+HD <-read.csv("data to manage/house data/house data1.csv", header = T)
+## Import house price index data (HPI_data)
+data_HPI <-read.csv("data to manage/HPI/HPI_data.csv", header = T)
+
+# Check is there any missing data (data1)
+sum(is.na(data1))
+sum(is.na(data1$Lake.Name))
+sum(is.na(data1$STN))
+sum(is.na(data1$Site.ID))
+sum(is.na(data1$Latitude))
+sum(is.na(data1$Longitude))
+sum(is.na(data1$Date))
+sum(is.na(data1$TP1))
+sum(is.na(data1$TP2))
+
+# Find missing data
+which(is.na(data1))
+which(is.na(data1$Lake.Name))
+which(is.na(data1$STN))
+which(is.na(data1$Site.ID))
+which(is.na(data1$Latitude))
+which(is.na(data1$Longitude))
+which(is.na(data1$Date))
+which(is.na(data1$TP1))
+which(is.na(data1$TP2))
+
+## Subset from data1("Lake.Name", "STN","Site.ID", "Date","TP1","TP2")
+data11<-subset(data1, select = c("Lake.Name", "STN","Site.ID", "Latitude", "Longitude", "Date", "TP1", "TP2"))
+
+##Convert date into year("23 aug 2002" to "2002-05-23")
+data11$yr<-as.Date(data11$Date, format="%d-%b-%y")
+
+##Convert date into only year("2002-05-23" to "2002")
+data11$Year<-year(data11$yr)
+
+##Finding the mean value of TP1 & TP2 for a single year
+#First, find the mean value from TP1 & TP2>> (TP1+TP2)/2
+
+data11$meanTP <- rowMeans(data11[c('TP1', 'TP2')], na.rm=TRUE)
+
+#Find out the yearly mean value
+#add all mean TP from different months of a same year and divided it by the number of months
+data11_yearly_mean_TP <- ddply(data11,c("Lake.Name", "STN","Site.ID","Latitude", "Longitude", "Year"),
+                               summarise, meanTP_yearly=mean(meanTP)) 
+
+## Change the DMS lat and long data into decimal for Data1
+#Latitude
+dms_data11_yearly_mean_TP<-transform(data11_yearly_mean_TP, d = substr(Latitude,1,2),m = substr(Latitude,3,4),s = substr(Latitude,5,6))
+
+#Longitude
+dms_data_set_1_TP<-transform(dms_data11_yearly_mean_TP, d_long = substr(Longitude,1,2),m_long = substr(Longitude,3,4),s_long = substr(Longitude,5,6))
+
+
+## Export r file as .csv
+
+export(dms_data_set_1_TP, "dms_data_set_1_TP.csv")
+
+##Final conversion DMS to decimal for data1
+#after exporting the  "dms_data_set_1" in csv format, I use -> d+m/60+s/3600 to get the latitude data and d_long+m_long/60+s_long/3600 >>
+#take -(d_long+m_long/60+s_long/3600) as longitude data and saved the file as "Final_clean_data1". Then import the data
+
+## Import "Final_clean_data_set_1_TP" (C:\Users\rar727\OneDrive - University of Saskatchewan\rash\data to manage\clean lat_long data\FINAL DATA DMS TO DD)
+
+Final_clean_data_set_1_TP <-read.csv("data to manage/clean lat_long data/FINAL DATA DMS TO DD/Final_clean_data_set_1_TP.csv", header = T)
+
+## Import lake data_Secchi_depth (Lake_2)
+## I imported Lake_2 data in the initial part
+
+# Check is there any missing data for data2
+sum(is.na(data2))
+sum(is.na(data2$Lake.Name))
+sum(is.na(data2$STN))
+sum(is.na(data2$Site.ID))
+sum(is.na(data2$Latitude))
+sum(is.na(data2$Longitude))
+sum(is.na(data2$Year))
+sum(is.na(data2$Secchi.depth_avg))
+
+# Find missing data
+which(is.na(data2))
+which(is.na(data2$Lake.Name))
+which(is.na(data2$STN))
+which(is.na(data2$Site.ID))
+which(is.na(data2$Latitude))
+which(is.na(data2$Longitude))
+which(is.na(data2$Year))
+which(is.na(data2$Secchi.depth_avg))
+
+## Subset from data2("Lake.Name", "STN","Site.ID", "Year","Secchi.depth_avg")
+data22<-subset(data2,select = c("Lake.Name", "STN","Site.ID","Latitude", "Longitude", "Year","Secchi.depth_avg"))
+
+## Change the DMS lat and long data into decimal for Data2
+#Latitude
+dms_data22<-transform(data22, d = substr(Latitude,1,2),m = substr(Latitude,3,4),s = substr(Latitude,5,6))
+
+#Longitude
+dms_data_set_2_SD<-transform(dms_data22, d_long = substr(Longitude,1,2),m_long = substr(Longitude,3,4),s_long = substr(Longitude,5,6))
+
+## Export r file as .csv
+export(dms_data_set_2_SD, "dms_data_set_2_SD.csv")
+
+##Final conversion DMS to decimal for data2
+#after exporting the  "dms_data22_data2" in csv format, I use -> d+m/60+s/3600 to get the latitude data and d_long+m_long/60+s_long/3600 >>
+#take -(d_long+m_long/60+s_long/3600) as longitude data and saved the file as "Final_clean_data2". Then import the data
+## Import "Final_clean_data_set_2_SD" (C:\Users\rar727\OneDrive - University of Saskatchewan\rash\data to manage\clean lat_long data\FINAL DATA DMS TO DD)
+Final_clean_data_set_2_SD <-read.csv("data to manage/clean lat_long data/FINAL DATA DMS TO DD/Final_clean_data_set_2_SD.csv", header = T)
+
+
+##Final managed data from data1 (Final_clean_data1) and data2 (Final_clean_data2)
+
+## merges data > Final_data_set_marged (Final_clean_data_set_1_TP & Final_clean_data_set_2_SD based on "Lake.Name", "STN", "Site.ID", "Latitude", "Longitude", "Year")
+Final_data_set_marged <- merge(Final_clean_data_set_1_TP, Final_clean_data_set_2_SD,by=c("Lake.Name", "STN", "Site.ID", "Latitude", "Longitude", "Year"),all=TRUE)
+
+## Omit N/A data= only select rows with complete data in all columns
+Final_data_set_marged_omit <- na.omit(Final_data_set_marged)
+
+## data edited by specific lat and long in excel
+# I only keep the data lies inside the lat long of the study area
+
+##Add "Lake_ID" to "Final_wq_data" 
+## I add a new column "Lake_ID" to edit_lat_long data
+
+edit_lat_long <- read.csv("data to manage/TP_SD_with_specific_lat_long/Final_data_set_marged_omit.csv", header = T)
+
+# Unique lakes
+unique_lake_new <- distinct(edit_lat_long, Lake.Name, .keep_all= TRUE)
+Final_wq_data_2<- edit_lat_long
+
+export(unique_lake_new, "unique_lake_new.csv")
+
+
+# CODE-2
+#-------
+## House data
+#------------
+
+## Import house data (house data1)
+## I imported house data1(HD) data in the initial part
+
+sum(is.na(HD))
+sum(is.na(HD$Date))
+sum(is.na(HD$house_price))
+sum(is.na(HD$area))
+sum(is.na(HD$Latitude))
+sum(is.na(HD$Longitude))
+sum(is.na(HD$perimeter))
+sum(is.na(HD$legal_description))
+sum(is.na(HD$pin))
+
+# Find missing data
+which(is.na(HD))
+which(is.na(HD$Date))
+which(is.na(HD$house_price))
+which(is.na(HD$area))
+which(is.na(HD$Latitude))
+which(is.na(HD$Longitude))
+which(is.na(HD$perimeter))
+which(is.na(HD$legal_description))
+
+## Omit N/A data= only select rows with complete data in all columns
+clean_HD <- na.omit(HD)
+sum(is.na(clean_HD))
+
+##Convert date into year("%m/%d/%Y" to "Y")
+clean_HD$Year <- format(as.Date(clean_HD$date, format="%m/%d/%Y"),"%Y")
+clean_HD$Date <- format(as.Date(clean_HD$date, format="%m/%d/%Y"),"%Y/%m")
+
+## Subset from clean_HD("Year","Latitude", "Longitude", "area", "house_price")
+clean_HD_sub<-subset(clean_HD,select = c("Year", "Date","Latitude", "Longitude", "area", "house_price"))
+
+## Export r file as .csv
+export(clean_HD_sub, "clean_HD_sub.csv")
+
+
+#CODE-3
+#------
+## Manage house price index (HPI) data
+#------------------------------------
+
+## Import HPI data (Base year 2016)
+## I imported data_HPI data in the initial part
+##In HPI_data, I converted Total(total HPI) into HPI by dividing Total with 100
+
+## Convert date: "%m/%d/%Y" to "%Y/%m"
+data_HPI$Date <- format(as.Date(data_HPI$Time.period, format="%m/%d/%Y"),"%Y/%m")
+
+## Subset from data_HPI ("Date","Total")
+clean_data_HPI<-subset(data_HPI,select = c("Date", "HPI"))
+
+## Adjust house price with HPI
+##----------------------------
+
+##Import clean house data "clean_HD_sub"
+clean_HD_sub <- read.csv("C:/Users/rar727/OneDrive - University of Saskatchewan/rash/final data/house data/clean_HD_sub.csv", header = T)
+
+##Merge HPI and housing price based on "Date" (clean_data_HPI and clean_HD_sub)
+marged_HPI_HD <- merge(clean_data_HPI, clean_HD_sub,by=c("Date"),all=TRUE)
+
+## Omit N/A data= only select rows with complete data in all columns
+Final_marged_HPI_HD <- na.omit(marged_HPI_HD)
+
+## check missing data
+sum(is.na(Final_marged_HPI_HD))
+
+##Multiply HPI and house price to get real house price
+Final_marged_HPI_HD$Real_price <- Final_marged_HPI_HD$HPI * Final_marged_HPI_HD$house_price
+
+##Adjusted house price-> clean_HPI_HD_real_price
+clean_HPI_HD_real_price <- Final_marged_HPI_HD
+
+## Export r file as .csv
+export(clean_HPI_HD_real_price, "clean_HPI_HD_real_price.csv")
+
+
+# CODE-4
+#-------
+## Calculates average WQ within certain threshold as well as closest WQ station by year
+#--------------------------------------------------------------------------------------
+
+# Function to calculate WQ variables
+
+CalcWQVariables <- function(df_wq, # Wq data
+                            df_house, # Single row of housing data
+                            dist_metres) # distance thresholds for radius
+{
+  
+  # Filter out WQ data for particular year
+  df_wq <- df_wq[df_wq$Year == df_house$Year, ]
+  
+  # Calculate distance between house and all stations within year
+  points <- points_in_circle(df_wq, df_house$Longitude, df_house$Latitude, radius = 2000000000) # metres
+  
+  # Return closest station
+  closest <- points[which.min(points$distance_m),]
+  
+  # Return all stations within threshold distance
+  points <- points[points$distance_m < dist_metres,]
+  
+  out <- df_house %>%
+    mutate(
+      # take average of WQ within threshold
+      meanTP = mean(points$meanTP_yearly),
+      meanSecchi = mean(points$Secchi.depth_avg),
+      # How many stations average based on
+      n_stations = nrow(points),
+      # Return closest WQ station and data
+      distance_m = closest$distance_m,
+      closeTP = closest$meanTP_yearly,
+      closeSecchi = closest$Secchi.depth_avg)
+  
+  return(out)
+}
+
+# Distance threshold to use (in metres)
+dist_metres <- 3000
+
+# load data
+v_lake <- Final_wq_data_2
+w_house <- read.csv("final data/HPI/clean_HPI_HD_real_price.csv", header = T)
+
+df_wq <- v_lake %>%
+  select(Year, Latitude, Longitude, meanTP_yearly, Secchi.depth_avg) 
+
+
+colnames(df_wq)[2] <- "lat"
+colnames(df_wq)[3] <- "lon"
+summary(df_wq)
+
+# Split housing data into lists for use in purrr:map
+df_house <- split(w_house, w_house$ID)
+
+df_wq_link <- map_dfr(df_house, CalcWQVariables, 
+                      df_wq = df_wq, 
+                      dist_metres = dist_metres)
+
+write_csv(df_wq_link, "final data/house data/wq_house_merged.csv")
+
+## Join house price data and shortest distance data
+#--------------------------------------------------
+## Import house price data (clean_HPI_HD_real_price)
+HP <-read.csv("final data/HPI/clean_HPI_HD_real_price.csv", header = T)
+HP_HSD_WQ <- left_join(HP, df_wq_link)
+Final_data <-subset(HP_HSD_WQ, select = c("Latitude", "Longitude", "Year", "area", "Real_price", "distance_m", "closeTP", "closeSecchi"))
+
+## check missing data
+sum(is.na(Final_data))
+
+
+# CODE-5
+#-------
+##Calculate shortest distance between house and nearest city
+#-----------------------------------------------------------
+## Import city location data
+i_lake <- read.csv("data to manage/exp_locations.csv", header = T)
+
+##I insert a new column "ID" in "clean_HPI_HD_real_price" and then import
+w_house <- read.csv("final data/HPI/clean_HPI_HD_real_price.csv", header = T)
+
+## create two different subset from v_lake & w_house data (one for house coordinates(w) & one for city coordinates(v))
+v <-subset(i_lake,select = c("c_ID","Latitude", "Longitude"))
+w <-subset(w_house,select = c("ID","Latitude", "Longitude"))
+
+#Euclidean distance 
+mydist <- function(a, b, w, x, y){
+  
+  dt <- data.table(sqrt((w[[x]]-a)^2 + (w[[y]]-b)^2))
+  
+  return(data.table(Closest.V1  = which.min(dt$V1),
+                    Distance    = dt[which.min(dt$V1)]))
+}
+
+Final_shortest_dist_1 <- setDT(w)[, j = mydist(Latitude, Longitude, setDT(v), 
+                                               "Latitude", "Longitude"), 
+                                  by = list(ID, Latitude, Longitude)]
+
+##Change the colamn name "Closest.V1" to "c_ID"
+colnames(Final_shortest_dist_1)[4] <- "c_ID"
+
+##Change the colamn name "distance.V1" to "city_distance"
+colnames(Final_shortest_dist_1)[5] <- "city_distance"
+city_distance <-Final_shortest_dist_1
+
+#merge HP_HSD_WQ and city_distance
+HP_HSD_WQ_city <- left_join(HP_HSD_WQ, city_distance)
+Final_data_city <-subset(HP_HSD_WQ_city, select = c("Real_price","Year", "area", "distance_m", "closeTP", "closeSecchi", "city_distance", "c_ID", "Latitude", "Longitude"))
+
+## model calculation
+##Change the column name "Closest.V1" to "L_ID"
+colnames(Final_data_city)[4] <- "Distance"
+colnames(Final_data_city)[5] <- "Total_phosphorus"
+colnames(Final_data_city)[6] <- "Secchi_depth"
+colnames(Final_data_city)[3] <- "Lot_size"
+
+df <- Final_data_city
+
+# Take log for Real_price, distance, lot_size
+df1<- subset(df,select = c(Real_price, Distance, Lot_size))
+l_Real_price <- log(df1[,c(1)])
+l_Distance <- log(df1[,c(2)])
+l_Lot_size <- log(df1[,c(3)])
+
+##combine all the log variables
+df2 <- data.frame(l_Real_price)
+df3 <- data.frame(l_Distance)
+df4 <- data.frame(l_Lot_size)
+df <- cbind(df, df2, df3, df4)
+
+summary(df)
+
+# Convert city distance in kilometer
+## Each degree of latitude is approximately 69 miles (111 kilometers) apart. At the equator, the distance is 68.703 miles (110.567 kilometers)
+df$city_distance_km<- df$city_distance * 110.567
+sd (df$city_distance_km)
+
+# remove infinite l_Lot_size data
+df<- df[-c(25582, 34481),]
+
+#create dummy variable for neighboring cities (4 dummy for 5 cities)
+df$c_ID_dummy_P<- ifelse(df$c_ID==1,1,0)
+df$c_ID_dummy_O<- ifelse(df$c_ID==2,1,0)
+df$c_ID_dummy_H<- ifelse(df$c_ID==3,1,0)
+df$c_ID_dummy_Br<- ifelse(df$c_ID==4,1,0)
+
+#create dummy variable for different years (9 dummies for 10 years)
+df$year_dummy_2005<- ifelse(df$Year==2005,1,0)
+df$year_dummy_2006<- ifelse(df$Year==2006,1,0)
+df$year_dummy_2007<- ifelse(df$Year==2007,1,0)
+df$year_dummy_2008<- ifelse(df$Year==2008,1,0)
+df$year_dummy_2009<- ifelse(df$Year==2009,1,0)
+df$year_dummy_2010<- ifelse(df$Year==2010,1,0)
+df$year_dummy_2011<- ifelse(df$Year==2011,1,0)
+df$year_dummy_2012<- ifelse(df$Year==2012,1,0)
+df$year_dummy_2013<- ifelse(df$Year==2013,1,0)
+
+#create dummy variable for lake distance
+df$lake_dist_dummy_500m<- ifelse(df$Distance <=500,1,0)
+df$lake_dist_dummy_750m<- ifelse(df$Distance > 500 & df$Distance <=750,1,0)
+df$lake_dist_dummy_1000m<- ifelse(df$Distance > 750 & df$Distance <=1000,1,0)
+df$lake_dist_dummy_2000m<- ifelse(df$Distance > 1000 & df$Distance <=2000,1,0)
+df$lake_dist_dummy_3000m<- ifelse(df$Distance > 2000 & df$Distance <=3000,1,0)
+
+# create dummy for TP
+df$tp_dummy <- ifelse(df$Total_phosphorus >= 10 & df$Total_phosphorus <=20,1,0)
+
+## Interacted variable lake distance*SD
+df$Distance_SD<- df$l_Distance * df$Secchi_depth
+
+## Interacted variable lake distance*TP
+df$Distance_TP<- df$l_Distance * df$Total_phosphorus
+
+## Interacted variable lake distance dummy*SD
+df$lake_dist_dummy_500m_SD<- df$lake_dist_dummy_500m * df$Secchi_depth
+df$lake_dist_dummy_750m_SD<- df$lake_dist_dummy_750m * df$Secchi_depth
+df$lake_dist_dummy_1000m_SD<- df$lake_dist_dummy_1000m * df$Secchi_depth
+df$lake_dist_dummy_2000m_SD<- df$lake_dist_dummy_2000m * df$Secchi_depth
+df$lake_dist_dummy_3000m_SD<- df$lake_dist_dummy_3000m * df$Secchi_depth
+
+## find the data set within specific lake distance
+## within 500m
+df_500m<-df[df$Distance <=500,]
+## within 500m-750m
+df_750m<-df[df$Distance > 500 & df$Distance <=750,]
+## within 750m-1000m
+df_1km<-df[df$Distance > 750 & df$Distance <=1000,]
+## within 1000m-2000m
+df_2km<-df[df$Distance > 1000 & df$Distance <=2000,]
+## within 2000m-3000m
+df_3km<-df[df$Distance > 2000 & df$Distance <=3000,]
+## above 3000m
+df_above_3km<-df[df$Distance > 3000,]
+
+## within 3000m
+df_within_3000m<-df[df$Distance <= 3000,]
+
+#create dummy variable for lake distance within 3000 meters (df_within_3000m)
+df_within_3000m$dummy_500m<- ifelse(df_within_3000m$Distance <=500,1,0)
+df_within_3000m$dummy_750m<- ifelse(df_within_3000m$Distance > 500 & df_within_3000m$Distance <=750,1,0)
+df_within_3000m$dummy_1000m<- ifelse(df_within_3000m$Distance > 750 & df_within_3000m$Distance <=1000,1,0)
+df_within_3000m$dummy_2000m<- ifelse(df_within_3000m$Distance > 1000 & df_within_3000m$Distance <=2000,1,0)
+
+#create SD*lake distance dummy within 3000 meters (df_within_3000m)
+## Interacted variable lake distance dummy*SD
+df_within_3000m$dummy_500m_SD<- df_within_3000m$dummy_500m * df_within_3000m$Secchi_depth
+df_within_3000m$dummy_750m_SD<- df_within_3000m$dummy_750m * df_within_3000m$Secchi_depth
+df_within_3000m$dummy_1000m_SD<- df_within_3000m$dummy_1000m * df_within_3000m$Secchi_depth
+df_within_3000m$dummy_2000m_SD<- df_within_3000m$dummy_2000m * df_within_3000m$Secchi_depth
+
+export(df_within_3000m, "df_within_3000m.csv")
+
+## Summary
+summary(df)
+
+## standard deviation
+
+sd(df$Real_price)
+sd(df$city_distance_km)
+sd(df$Distance)
+sd(df$Total_phosphorus)
+sd(df$Secchi_depth)
+sd(df$Year)
+sd(df$city_distance_km)
+
+## Model estimation
+#------------------
+## (Table 1)Base model (l_Real_price) (Model 1, Model 2, Model 3) 
+#----------------------------------------------------------------
+## Model 1
+#---------
+xs <- c("Secchi_depth", "Total_phosphorus")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg_base_1 <- lm(as.formula(f), data=df)
+
+## Model 2
+#---------
+xs <- c("l_Lot_size", "l_Distance","Secchi_depth", "Total_phosphorus", "city_distance_km")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg_base_2 <- lm(as.formula(f), data=df)
+
+## Model 3
+#---------
+xs <- c("l_Lot_size", "l_Distance","Secchi_depth", "Total_phosphorus", "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br",
+        "year_dummy_2005", "year_dummy_2006", "year_dummy_2007", "year_dummy_2008", "year_dummy_2009", "year_dummy_2010", "year_dummy_2011", "year_dummy_2012", "year_dummy_2013")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg_base_3 <- lm(as.formula(f), data=df)
+
+# Regression results
+stargazer(reg_base_1,reg_base_2,reg_base_3, type = "text")
+
+
+## (Table 2) Model 4: (l_Real_price) with TP dummy (tp_dummy) 
+#------------------------------------------------------------
+## Model 4
+#---------------
+xs <- c("l_Lot_size", "l_Distance", "Secchi_depth", "tp_dummy", "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br",
+        "year_dummy_2005", "year_dummy_2006", "year_dummy_2007", "year_dummy_2008", "year_dummy_2009", "year_dummy_2010", "year_dummy_2011", "year_dummy_2012", "year_dummy_2013")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg_model_4 <- lm(as.formula(f), data=df)
+
+# Regression results
+stargazer(reg_model_4, type = "text")
+
+## Table 3= Model 5, Model 6, Model 7 (only single WQ variable)
+#--------------------------------------------------------------------
+## Model 5
+#---------------
+## Model 5:	Only SD as WQ variable
+xs <- c("l_Lot_size", "l_Distance", "Secchi_depth", "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br",
+        "year_dummy_2005", "year_dummy_2006", "year_dummy_2007", "year_dummy_2008", "year_dummy_2009", "year_dummy_2010", "year_dummy_2011", "year_dummy_2012", "year_dummy_2013")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg_model_5<- lm(as.formula(f), data=df)
+
+# Regression results
+stargazer(reg_model_5, type = "text")
+
+## Model 6
+#---------------
+## Model 6:	Only TP as WQ variable
+xs <- c("l_Lot_size", "l_Distance", "Total_phosphorus", "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br",
+        "year_dummy_2005", "year_dummy_2006", "year_dummy_2007", "year_dummy_2008", "year_dummy_2009", "year_dummy_2010", "year_dummy_2011", "year_dummy_2012", "year_dummy_2013")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg_model_6 <- lm(as.formula(f), data=df)
+
+# Regression results
+stargazer(reg_model_6, type = "text")
+
+## Model 7
+#---------------
+## Model 7:	Only TP (dummy: 10-20 microgram per liter = 1, rest of the values = 0) as WQ variable
+xs <- c("l_Lot_size", "l_Distance", "tp_dummy", "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br",
+        "year_dummy_2005", "year_dummy_2006", "year_dummy_2007", "year_dummy_2008", "year_dummy_2009", "year_dummy_2010", "year_dummy_2011", "year_dummy_2012", "year_dummy_2013")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg_model_7 <- lm(as.formula(f), data=df)
+
+# Regression results
+stargazer(reg_model_5, reg_model_6, reg_model_7, type = "text")
+
+
+## Alternative specific models
+#-----------------------------
+
+## Table 4: model 8(SD*l_distance),model 9 (SD*lake distance dummy)
+#-------------------------------------------------------------
+
+## Model 8: SD, l_Distance, SD*l_distance 
+
+xs <- c("l_Lot_size", "l_Distance","Secchi_depth","Distance_SD", 
+        "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br",
+        "year_dummy_2005", "year_dummy_2006", "year_dummy_2007", "year_dummy_2008", "year_dummy_2009", "year_dummy_2010", "year_dummy_2011", "year_dummy_2012", "year_dummy_2013")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg_model_8 <- lm(as.formula(f), data=df)
+
+## Model 9: SD, l_distance dummy, SD*l_distance dummy
+
+xs <- c("l_Lot_size","Secchi_depth",
+        "lake_dist_dummy_500m","lake_dist_dummy_750m","lake_dist_dummy_1000m","lake_dist_dummy_2000m",
+        "lake_dist_dummy_3000m",
+        "lake_dist_dummy_500m_SD","lake_dist_dummy_750m_SD","lake_dist_dummy_1000m_SD","lake_dist_dummy_2000m_SD",
+        "lake_dist_dummy_3000m_SD","c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br",
+        "year_dummy_2005", "year_dummy_2006", "year_dummy_2007", "year_dummy_2008", "year_dummy_2009", "year_dummy_2010", "year_dummy_2011", 
+        "year_dummy_2012", "year_dummy_2013")
+f <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg_model_9 <- lm(as.formula(f), data=df)
+
+stargazer(reg_model_8,reg_model_9, type = "text")
+
+## Marginal implicit price of secchi depth
+#-----------------------------------------
+## Model 8: SD, SD*l_distance
+
+average_price <- mean(df$Real_price)
+average_l_Distance <- mean(df$l_Distance)
+deltaMethod(reg_model_8, "Secchi_depth + (Distance_SD*average_l_Distance)")
+
+## MWTP For lake distance=avg_l_dist
+deltaMethod(reg_model_8, "(Secchi_depth + (Distance_SD*average_l_Distance))*average_price")
+
+## Marginal implicit price of secchi depth
+#-----------------------------------------
+## Model 9: SD, SD*l_distance dummy
+
+## MWTP for SD
+#-------------
+
+## Marginal implicit price of SD for different lake distance
+#----------------------------------------------------------------------
+average_price <- mean(df$Real_price)
+deltaMethod(reg_model_9, "Secchi_depth + lake_dist_dummy_500m_SD")
+deltaMethod(reg_model_9, "Secchi_depth + lake_dist_dummy_750m_SD")
+deltaMethod(reg_model_9, "Secchi_depth + lake_dist_dummy_1000m_SD")
+deltaMethod(reg_model_9, "Secchi_depth + lake_dist_dummy_2000m_SD")
+deltaMethod(reg_model_9, "Secchi_depth + lake_dist_dummy_3000m_SD")
+
+## MWTP for SD for different lake distance
+
+##MWTP for SD
+#----------
+
+## For lake distance=500meter
+deltaMethod(reg_model_9, "(Secchi_depth + lake_dist_dummy_500m_SD)*average_price")
+## For lake distance=750meter 
+deltaMethod(reg_model_9, "(Secchi_depth + lake_dist_dummy_750m_SD)*average_price")
+## For lake distance=1000meter
+deltaMethod(reg_model_9, "(Secchi_depth + lake_dist_dummy_1000m_SD)*average_price")
+## For lake distance=2000meter 
+deltaMethod(reg_model_9, "(Secchi_depth + lake_dist_dummy_2000m_SD)*average_price")
+## For lake distance=3000meter 
+deltaMethod(reg_model_9, "(Secchi_depth + lake_dist_dummy_3000m_SD)*average_price")
+## For lake distance= Above 3000meter 
+deltaMethod(reg_model_9, "(Secchi_depth)*average_price")
+
+## Plot of MWTP
+#--------------
+plot.data22 <- deltaMethod(reg_model_9, "(Secchi_depth + lake_dist_dummy_500m_SD)*average_price") %>%
+  mutate(MWTP="within 500m")
+plot.data23 <- deltaMethod(reg_model_9, "(Secchi_depth + lake_dist_dummy_750m_SD)*average_price") %>%
+  mutate(MWTP="500m to 750m") 
+plot.data24 <- deltaMethod(reg_model_9, "(Secchi_depth + lake_dist_dummy_1000m_SD)*average_price") %>%
+  mutate(MWTP="750m to 1000m") 
+plot.data25 <- deltaMethod(reg_model_9, "(Secchi_depth + lake_dist_dummy_2000m_SD)*average_price") %>%
+  mutate(MWTP="1000m to 2000m") 
+plot.data26 <- deltaMethod(reg_model_9, "(Secchi_depth + lake_dist_dummy_3000m_SD)*average_price") %>%
+  mutate(MWTP="2000m to 3000m")
+plot.data27 <- deltaMethod(reg_model_9, "(Secchi_depth)*average_price") %>%
+  mutate(MWTP="Above 3000m") 
+
+z<- data.frame(rbind(plot.data22, plot.data23,plot.data24,plot.data25,plot.data26, plot.data27))
+
+colnames(z)[3] <- "2.5 %"
+colnames(z)[4] <- "97.5 %"
+
+# Make a plot
+
+level_order_1 <- c('within 500m','500m to 750m','750m to 1000m','1000m to 2000m','2000m to 3000m','Above 3000m')
+ggplot(data = z, aes(x = factor(MWTP,level = level_order_1), y = `Estimate`, ymin = `2.5 %`, ymax = `97.5 %`)) + 
+  geom_pointrange() +
+  geom_errorbar()+
+  geom_hline(yintercept = 1, lty = 2) +
+  xlab("Distance from house to WQ station") + ylab("MWTP for SD with 95% Confidence Interval")   + # Labels
+  theme_bw()  # Nicer theme
+
+##--------------------------------------------------------
+## Model-10 with observations within 3000 meter lake distances
+#---------------------------------------------------------
+## Model-10: SD,l_Distance dummy, SD*l_distance dummy (only 3000 meter)
+
+xs <- c("l_Lot_size","Secchi_depth",
+        "dummy_500m","dummy_750m","dummy_1000m","dummy_2000m",
+        "dummy_500m_SD","dummy_750m_SD","dummy_1000m_SD","dummy_2000m_SD",
+        "c_ID_dummy_P", "c_ID_dummy_O", "c_ID_dummy_H", "c_ID_dummy_Br",
+        "year_dummy_2005", "year_dummy_2006", "year_dummy_2007", "year_dummy_2008", "year_dummy_2009", "year_dummy_2010", "year_dummy_2011", 
+        "year_dummy_2012", "year_dummy_2013")
+fs <- paste("l_Real_price ~",paste(xs, collapse=" + "))
+reg_model_10 <- lm(as.formula(fs), data=df_within_3000m)
+stargazer(reg_model_10, type = "text")
+
+##MWTP for SD
+#----------
+## Average price
+average_price_3000m <- mean(df_within_3000m$Real_price)
+average_price <- mean(df$Real_price)
+
+## For lake distance=500meter
+deltaMethod(reg_model_10, "(Secchi_depth + dummy_500m_SD)*average_price_3000m")
+## For lake distance=750meter 
+deltaMethod(reg_model_10, "(Secchi_depth + dummy_750m_SD)*average_price_3000m")
+## For lake distance=1000meter
+deltaMethod(reg_model_10, "(Secchi_depth + dummy_1000m_SD)*average_price_3000m")
+## For lake distance=2000meter 
+deltaMethod(reg_model_10, "(Secchi_depth + dummy_2000m_SD)*average_price_3000m")
+## For lake distance= Above 2000meter 
+deltaMethod(reg_model_10, "(Secchi_depth)*average_price_3000m")
+
+## Plot of MWTP
+#----------------------------------------
+plot.data42 <- deltaMethod(reg_model_10, "(Secchi_depth + dummy_500m_SD)*average_price_3000m") %>%
+  mutate(MWTP="within 500m") 
+plot.data43 <- deltaMethod(reg_model_10, "(Secchi_depth + dummy_750m_SD)*average_price_3000m") %>%
+  mutate(MWTP="500m to 750m") 
+plot.data44 <- deltaMethod(reg_model_10, "(Secchi_depth + dummy_1000m_SD)*average_price_3000m") %>%
+  mutate(MWTP="750m to 1000m") 
+plot.data45 <- deltaMethod(reg_model_10, "(Secchi_depth + dummy_2000m_SD)*average_price_3000m") %>%
+  mutate(MWTP="1000m to 2000m") 
+plot.data46 <- deltaMethod(reg_model_10, "(Secchi_depth)*average_price_3000m") %>%
+  mutate(MWTP="Above 2000m") 
+q<- data.frame(rbind(plot.data42,plot.data43,plot.data44,plot.data45,plot.data46))
+
+colnames(q)[3] <- "2.5 %"
+colnames(q)[4] <- "97.5 %"
+
+# Make a plot
+
+level_order_2 <- c('within 500m','500m to 750m','750m to 1000m','1000m to 2000m','Above 2000m')
+ggplot(data = q, aes(x = factor(MWTP,level = level_order_2), y = `Estimate`, ymin = `2.5 %`, ymax = `97.5 %`)) + 
+  geom_pointrange() +
+  geom_errorbar()+
+  geom_hline(yintercept = 1, lty = 2) +
+  xlab("Distance from house to WQ station") + ylab("MWTP for SD with 95% Confidence Interval")   + # Labels
+  theme_bw()  # Nicer theme
+
+
+
+
+
+
+
+
+
+
+
+
+
